@@ -14,6 +14,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <lombok.version>1.18.18</lombok.version>
         <log4j-core.version>2.14.0</log4j-core.version>
+        <hibernate-core.version>5.4.30.Final</hibernate-core.version>
         <testng.version>7.1.0</testng.version>
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
@@ -30,6 +31,11 @@
             <version>${log4j-core.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-core.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>${testng.version}</version>
@@ -40,11 +46,6 @@
             <artifactId>hamcrest</artifactId>
             <version>${hamcrest.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>by.bivis.kbp.parser</groupId>
-            <artifactId>KbpScheduleParser</artifactId>
-            <version>0.0.5</version>
         </dependency>
     </dependencies>
 
