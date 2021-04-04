@@ -1,9 +1,9 @@
 package by.bivis.schedule_bot_model;
 
-import lombok.AllArgsConstructor;
+import by.bivis.schedule_bot_model.objects.parser_objects.User;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
-public abstract class ScheduleBot implements Runnable {
-    private final ScheduleBotModel model;
-    private final ScheduleBotController controller;
+@RequiredArgsConstructor
+public abstract class ScheduleBot<T extends User> implements Runnable {
+    private final ScheduleBotController<T> controller;
 }

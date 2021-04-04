@@ -20,11 +20,7 @@ public class Source<T extends Serializable> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    private String category;
     private String content;
     private T primarySource; //TODO serialize primary source https://stackoverflow.com/questions/5966039/how-do-i-serialize-object-to-database-for-hibernate-to-read-in-java
-
-    public Source(String content, T primarySource) {
-        this.content = content;
-        this.primarySource = primarySource;
-    }
 }

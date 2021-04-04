@@ -19,5 +19,5 @@ public class News {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @ElementCollection
-    private Map<?, ?> content;
+    private Map<String, String> content;
 }

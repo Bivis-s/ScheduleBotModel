@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.List;
 
 @Data
 public class User {
@@ -16,5 +17,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    //TODO add state
+    private UserState state;
+    private List<Source<? extends User>> subscriptions;
+    //TODO ADD NOTES
 }
