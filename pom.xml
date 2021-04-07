@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,8 @@
         <log4j-core.version>2.14.0</log4j-core.version>
         <hibernate-core.version>5.4.30.Final</hibernate-core.version>
         <telegrambots.version>5.1.1</telegrambots.version>
+        <sqlite-jdbc.version>3.34.0</sqlite-jdbc.version>
+        <sqlite-dialect.version>1.0</sqlite-dialect.version>
         <testng.version>7.1.0</testng.version>
         <hamcrest.version>2.2</hamcrest.version>
     </properties>
@@ -40,6 +42,16 @@
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots</artifactId>
             <version>${telegrambots.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>${sqlite-jdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zsoltfabok</groupId>
+            <artifactId>sqlite-dialect</artifactId>
+            <version>${sqlite-dialect.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
