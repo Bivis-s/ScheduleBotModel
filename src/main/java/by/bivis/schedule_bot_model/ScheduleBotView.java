@@ -1,21 +1,20 @@
 package by.bivis.schedule_bot_model;
 
-import by.bivis.schedule_bot_model.objects.parser_objects.News;
-import by.bivis.schedule_bot_model.objects.parser_objects.Schedule;
-import by.bivis.schedule_bot_model.objects.parser_objects.User;
-
 import java.util.List;
 import java.util.Set;
 
-public interface ScheduleBotView<T extends User> {
-    void sendNews(T user, List<News> news);
+public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
+    void sendNews(USER user, List<NEWS> news);
 
-    void sendSourceCategories(T user, Set<String> sources);
+    void sendSourceCategories(USER user, Set<String> sources);
 
-    void sendSourcesSubcategoryByCategory(T user, Set<String> sourceSubcategories);
+    void sendSourcesSubcategoryByCategory(USER user, Set<String> sourceSubcategories);
 
-    void sendSchedules(T user, List<Schedule> schedule);
+    void sendSignedSources(USER user, List<SOURCE> sources);
 
-    void sendHelloMessage(T user, String message);
+    void sendSchedule(USER user, SCHEDULE schedule);
 
+    void sendHelloMessage(USER user, String message);
+
+    void sendSources(List<SOURCE> sources);
 }
