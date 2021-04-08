@@ -1,6 +1,7 @@
 package by.bivis.schedule_bot_model;
 
 import by.bivis.schedule_bot_model.objects.db_objects.*;
+import by.bivis.schedule_bot_model.views.ScheduleBotView;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,11 +19,21 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     private Parser<NEWS, SOURCE, SCHEDULE> parser;
     private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> view;
 
+    //TODO рефактор этих методов
+
     protected abstract USER setStateToUser(USER user, UserState state);
 
     protected abstract USER setSelectedSourceCategoryToUser(USER user, String sourceCategory);
 
     protected abstract USER setSelectedSourceSubcategoryToUser(USER user, String sourceSubcategory);
+
+    protected abstract long getUserId(USER user);
+
+    protected abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
+
+    protected void cleanSelectedSourceCategoryAndSubcategory(USER user) {
+        getUserDao().update(setSelectedSourceCategoryAndSubcategoryToNull(user));
+    }
 
     protected void updateUserState(USER user, UserState state) {
         getUserDao().update(setStateToUser(user, state));
@@ -80,8 +91,11 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         updateUserState(user, UserState.SOURCES_SUBCATEGORIES);
     }
 
-    public void sendSelectedSource(USER user, String category, String subcategory) {
-        getView().sendSources(getSourceDao().getSourcesByCategoryAndSubcategory(category, subcategory));
+    public void sendSelectedSourceToView(USER user) {
+        String category = getUserDao().getSelectedSourceCategory(getUserId(user));
+        String subcategory = getUserDao().getSelectedSourceSubcategory(getUserId(user));;
+        getView().sendSources(user, getSourceDao().getSourcesByCategoryAndSubcategory(category, subcategory));
+        cleanSelectedSourceCategoryAndSubcategory(user);
     }
 
     public void sendSubscriptionsToView(USER user, long userId) {
@@ -95,7 +109,7 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     }
 
     public void sendHelloMessageToView(USER user) {
-        getView().sendHelloMessage(user, "Щеее не вмерла Украина!"); //TODO вынести весь статичный текст в отдельный класс/интерфейс
+        getView().sendMessage(user, "Ще не вмерла украина"); //TODO вынести весь статичный текст в отдельный класс/интерфейс
         updateUserState(user, UserState.START);
     }
 

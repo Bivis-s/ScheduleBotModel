@@ -1,5 +1,6 @@
-package by.bivis.schedule_bot_model;
+package by.bivis.schedule_bot_model.controllers;
 
+import by.bivis.schedule_bot_model.ScheduleBotModel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

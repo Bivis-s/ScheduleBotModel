@@ -1,4 +1,4 @@
-package by.bivis.schedule_bot_model;
+package by.bivis.schedule_bot_model.views;
 
 import java.util.List;
 import java.util.Set;
@@ -14,7 +14,9 @@ public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
 
     void sendSchedule(USER user, SCHEDULE schedule);
 
-    void sendHelloMessage(USER user, String message);
+    void sendSources(USER user, List<SOURCE> sources);
 
-    void sendSources(List<SOURCE> sources);
+    void sendMessage(USER user, String message);
+
+    void sendParsingInProcessMessage(USER user, String message);
 }
