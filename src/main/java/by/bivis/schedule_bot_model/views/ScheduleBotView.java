@@ -17,6 +17,4 @@ public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
     void sendSources(USER user, List<SOURCE> sources);
 
     void sendMessage(USER user, String message);
-
-    void sendParsingInProcessMessage(USER user, String message);
 }

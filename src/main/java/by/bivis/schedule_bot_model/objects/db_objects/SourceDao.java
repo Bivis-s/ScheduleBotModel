@@ -13,4 +13,6 @@ public interface SourceDao<SOURCE> extends BaseDao<SOURCE> {
 
     // возвращает список источников, с определенным типом и подтипом
     List<SOURCE> getSourcesByCategoryAndSubcategory(String category, String subcategory);
+
+    SOURCE getSelectedSource(long userId, String category, String subcategory, String sourceName);
 }

@@ -1,6 +1,11 @@
-package by.bivis.schedule_bot_model;
+package by.bivis.schedule_bot_model.models;
 
-import by.bivis.schedule_bot_model.objects.db_objects.*;
+import by.bivis.schedule_bot_model.Parser;
+import by.bivis.schedule_bot_model.UserState;
+import by.bivis.schedule_bot_model.objects.db_objects.NewsDao;
+import by.bivis.schedule_bot_model.objects.db_objects.ScheduleDao;
+import by.bivis.schedule_bot_model.objects.db_objects.SourceDao;
+import by.bivis.schedule_bot_model.objects.db_objects.UserDao;
 import by.bivis.schedule_bot_model.views.ScheduleBotView;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +20,7 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     private NewsDao<NEWS> newsDao;
     private SourceDao<SOURCE> sourceDao;
     private ScheduleDao<SCHEDULE> scheduleDao;
-    private UserDao<USER> userDao;
+    private UserDao<USER, SOURCE> userDao;
     private Parser<NEWS, SOURCE, SCHEDULE> parser;
     private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> view;
 
@@ -29,7 +34,11 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
 
     protected abstract long getUserId(USER user);
 
+    protected abstract long getSourceId(SOURCE source);
+
     protected abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
+
+    public abstract void handleCommandByUserState(USER user, String command);
 
     protected void cleanSelectedSourceCategoryAndSubcategory(USER user) {
         getUserDao().update(setSelectedSourceCategoryAndSubcategoryToNull(user));
@@ -45,6 +54,21 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
 
     protected void updateUserSelectedSourceSubcategory(USER user, String subcategory) {
         getUserDao().update(setSelectedSourceSubcategoryToUser(user, subcategory));
+    }
+
+    protected void addSubscriptionToUser(USER user, String sourceName) {
+        SOURCE source = getSourceDao()
+                .getSelectedSource(getUserId(user),
+                        getUserDao().getSelectedSourceCategory(getUserId(user)),
+                        getUserDao().getSelectedSourceSubcategory(getUserId(user)),
+                        sourceName);
+        if (getUserDao().isThereSuchSubscription(getUserId(user), source)) {
+            sendThereIsAlreadySuchSubscriptionMessageToView(user);
+        } else {
+            getUserDao().addSubscriptionToUser(getUserId(user), source);
+            sendSubscriptionSuccessMessageToView(user);
+        }
+        cleanSelectedSourceCategoryAndSubcategory(user);
     }
 
     // TODO вынести в отдельный класс
@@ -93,13 +117,13 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
 
     public void sendSelectedSourceToView(USER user) {
         String category = getUserDao().getSelectedSourceCategory(getUserId(user));
-        String subcategory = getUserDao().getSelectedSourceSubcategory(getUserId(user));;
+        String subcategory = getUserDao().getSelectedSourceSubcategory(getUserId(user));
         getView().sendSources(user, getSourceDao().getSourcesByCategoryAndSubcategory(category, subcategory));
-        cleanSelectedSourceCategoryAndSubcategory(user);
+        updateUserState(user, UserState.SOURCES);
     }
 
-    public void sendSubscriptionsToView(USER user, long userId) {
-        getView().sendSignedSources(user, getSourceDao().getSignedSources(userId));
+    public void sendSubscriptionsToView(USER user) {
+        getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
         updateUserState(user, UserState.PICK_SIGNED_SOURCE);
     }
 
@@ -113,5 +137,15 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         updateUserState(user, UserState.START);
     }
 
-    public abstract void handleCommandByUserState(USER user, String command);
+    public void sendParsingInProcessMessageToView(USER user) {
+        getView().sendMessage(user, "Происходит обновление данных, может потребоваться время...");
+    }
+
+    public void sendThereIsAlreadySuchSubscriptionMessageToView(USER user) {
+        getView().sendMessage(user, "Вы уже подписаны на этот источник");
+    }
+
+    public void sendSubscriptionSuccessMessageToView(USER user) {
+        getView().sendMessage(user, "Подписка прошла успешно");
+    }
 }

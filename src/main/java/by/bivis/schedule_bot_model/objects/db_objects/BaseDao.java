@@ -7,7 +7,7 @@ public interface BaseDao<T> {
 
     T get(long entityId);
 
-    void put(T entity);
+    void save(T entity);
 
     void update(T entity);
 
