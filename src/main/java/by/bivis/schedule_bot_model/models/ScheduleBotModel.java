@@ -19,7 +19,7 @@ import java.util.List;
 public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     private NewsDao<NEWS> newsDao;
     private SourceDao<SOURCE> sourceDao;
-    private ScheduleDao<SCHEDULE> scheduleDao;
+    private ScheduleDao<SCHEDULE, SOURCE> scheduleDao;
     private UserDao<USER, SOURCE> userDao;
     private Parser<NEWS, SOURCE, SCHEDULE> parser;
     private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> view;
@@ -57,16 +57,16 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     }
 
     protected void addSubscriptionToUser(USER user, String sourceName) {
-        SOURCE source = getSourceDao()
-                .getSelectedSource(getUserId(user),
-                        getUserDao().getSelectedSourceCategory(getUserId(user)),
-                        getUserDao().getSelectedSourceSubcategory(getUserId(user)),
-                        sourceName);
+        SOURCE source = getSourceDao().getSelectedSource(getUserId(user),
+                getUserDao().getSelectedSourceCategory(getUserId(user)),
+                getUserDao().getSelectedSourceSubcategory(getUserId(user)),
+                sourceName);
         if (getUserDao().isThereSuchSubscription(getUserId(user), source)) {
             sendThereIsAlreadySuchSubscriptionMessageToView(user);
         } else {
             getUserDao().addSubscriptionToUser(getUserId(user), source);
             sendSubscriptionSuccessMessageToView(user);
+            sendTodayAndTomorrowScheduleToView(user, source);
         }
         cleanSelectedSourceCategoryAndSubcategory(user);
     }
@@ -96,7 +96,7 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
 
     public void updateSchedules() {
         for (SOURCE source : getSourceDao().getSignedSources()) {
-            updateSchedule(getParser().getSchedule(source));
+            updateSchedule(getParser().getTodayAndTomorrowSchedule(source));
         }
     }
 
@@ -127,25 +127,35 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         updateUserState(user, UserState.PICK_SIGNED_SOURCE);
     }
 
-    public void sendScheduleToView(USER user, SOURCE source) {
-        getView().sendSchedule(user, getScheduleDao().get(source));
+    public void sendSubscriptionsToSeeExtendedScheduleToView(USER user) {
+        getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
+        updateUserState(user, UserState.PICK_SIGNED_SOURCE_EXTENDED);
+    }
+
+    public void sendTodayAndTomorrowScheduleToView(USER user, SOURCE source) {
+        getView().sendTodayAndTomorrowSchedule(user, getParser().getTodayAndTomorrowSchedule(source));
+        updateUserState(user, UserState.SCHEDULE);
+    }
+
+    public void sendExtendedScheduleToView(USER user, SOURCE source) {
+        getView().sendExtendedSchedule(user, getParser().getExtendedSchedule(source));
         updateUserState(user, UserState.SCHEDULE);
     }
 
     public void sendHelloMessageToView(USER user) {
-        getView().sendMessage(user, "Ще не вмерла украина"); //TODO вынести весь статичный текст в отдельный класс/интерфейс
+        getView().sendInfoMessage(user);
         updateUserState(user, UserState.START);
     }
 
     public void sendParsingInProcessMessageToView(USER user) {
-        getView().sendMessage(user, "Происходит обновление данных, может потребоваться время...");
+        getView().sendParsingInProcessMessage(user);
     }
 
     public void sendThereIsAlreadySuchSubscriptionMessageToView(USER user) {
-        getView().sendMessage(user, "Вы уже подписаны на этот источник");
+        getView().sendThereIsAlreadySuchSubscriptionMessage(user);
     }
 
     public void sendSubscriptionSuccessMessageToView(USER user) {
-        getView().sendMessage(user, "Подписка прошла успешно");
+        getView().sendSubscriptionSuccessMessage(user);
     }
 }

@@ -12,9 +12,17 @@ public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
 
     void sendSignedSources(USER user, List<SOURCE> sources);
 
-    void sendSchedule(USER user, SCHEDULE schedule);
+    void sendTodayAndTomorrowSchedule(USER user, SCHEDULE schedule);
+
+    void sendExtendedSchedule(USER user, SCHEDULE schedule);
 
     void sendSources(USER user, List<SOURCE> sources);
 
-    void sendMessage(USER user, String message);
+    void sendInfoMessage(USER user);
+
+    void sendParsingInProcessMessage(USER user);
+
+    void sendThereIsAlreadySuchSubscriptionMessage(USER user);
+
+    void sendSubscriptionSuccessMessage(USER user);
 }

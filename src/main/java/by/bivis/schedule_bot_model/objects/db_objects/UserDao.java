@@ -5,7 +5,7 @@ public interface UserDao<USER, SOURCE> extends BaseDao<USER> {
 
     String getSelectedSourceSubcategory(long userId);
 
-    void addSubscriptionToUser(long userId,  SOURCE source);
+    void addSubscriptionToUser(long userId, SOURCE source);
 
-    boolean isThereSuchSubscription(long userId,  SOURCE source);
+    boolean isThereSuchSubscription(long userId, SOURCE source);
 }

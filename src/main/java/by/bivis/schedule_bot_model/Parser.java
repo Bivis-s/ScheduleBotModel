@@ -6,7 +6,9 @@ import java.util.Set;
 public interface Parser<NEWS, SOURCE, SCHEDULE> { // TODO Сделать прокси между парсером и моделью, связать с бд
     List<NEWS> getNews();
 
-    SCHEDULE getSchedule(SOURCE source);
+    SCHEDULE getTodayAndTomorrowSchedule(SOURCE source);
+
+    SCHEDULE getExtendedSchedule(SOURCE source);
 
     List<SOURCE> getSources();
 
