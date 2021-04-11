@@ -17,4 +17,6 @@ public interface SourceDao<SOURCE> extends BaseDao<SOURCE> {
     SOURCE getSelectedSource(long userId, String category, String subcategory, String sourceName);
 
     SOURCE getSourceFromSubscriptionsByName(long userId, String sourceName);
+
+    SOURCE getSourceByName(String sourceName);
 }

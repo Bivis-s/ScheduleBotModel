@@ -7,5 +7,9 @@ public interface UserDao<USER, SOURCE> extends BaseDao<USER> {
 
     void addSubscriptionToUser(long userId, SOURCE source);
 
+    void removeSubscriptionFromUser(long userId, SOURCE source);
+
+    boolean isThereSubscriptions(long userId);
+
     boolean isThereSuchSubscription(long userId, SOURCE source);
 }

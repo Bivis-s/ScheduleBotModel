@@ -2,6 +2,7 @@ package by.bivis.schedule_bot_model.models;
 
 import by.bivis.schedule_bot_model.Parser;
 import by.bivis.schedule_bot_model.UserState;
+import by.bivis.schedule_bot_model.errors.SourceWasntFoundError;
 import by.bivis.schedule_bot_model.objects.db_objects.NewsDao;
 import by.bivis.schedule_bot_model.objects.db_objects.ScheduleDao;
 import by.bivis.schedule_bot_model.objects.db_objects.SourceDao;
@@ -10,8 +11,6 @@ import by.bivis.schedule_bot_model.views.ScheduleBotView;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -56,47 +55,45 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         getUserDao().update(setSelectedSourceSubcategoryToUser(user, subcategory));
     }
 
-    protected void addSubscriptionToUser(USER user, String sourceName) {
-        SOURCE source = getSourceDao().getSelectedSource(getUserId(user),
+    private SOURCE getSelectedSourceByName(USER user, String sourceName) {
+        return getSourceDao().getSelectedSource(getUserId(user),
                 getUserDao().getSelectedSourceCategory(getUserId(user)),
                 getUserDao().getSelectedSourceSubcategory(getUserId(user)),
                 sourceName);
-        if (getUserDao().isThereSuchSubscription(getUserId(user), source)) {
-            sendThereIsAlreadySuchSubscriptionMessageToView(user);
-        } else {
-            getUserDao().addSubscriptionToUser(getUserId(user), source);
-            sendSubscriptionSuccessMessageToView(user);
-            sendTodayAndTomorrowScheduleToView(user, source);
-        }
-        cleanSelectedSourceCategoryAndSubcategory(user);
     }
 
-    // TODO вынести в отдельный класс
-    private void updateSources(List<SOURCE> sources) {
-        getSourceDao().update(sources.get(2));
+    private SOURCE getSignedSourceByName(USER user, String sourceName) {
+        return getSourceDao().getSourceFromSubscriptionsByName(getUserId(user), sourceName);
     }
 
-    public void updateSources() {
-        List<SOURCE> sources = getParser().getSources();
-        for (SOURCE source : sources) {
-            getSourceDao().update(source);
-        }
-    }
-
-    public void updateNews() {
-        List<NEWS> newsList = getParser().getNews();
-        for (NEWS news : newsList) {
-            getNewsDao().update(news);
+    protected void addSubscriptionToUser(USER user, String sourceName) {
+        try {
+            SOURCE source = getSelectedSourceByName(user, sourceName);
+            if (getUserDao().isThereSuchSubscription(getUserId(user), source)) {
+                sendThereIsAlreadySuchSubscriptionMessageToView(user);
+            } else {
+                getUserDao().addSubscriptionToUser(getUserId(user), source);
+                sendSubscriptionSuccessMessageToView(user);
+                sendTodayAndTomorrowScheduleToView(user, source);
+            }
+            cleanSelectedSourceCategoryAndSubcategory(user);
+        } catch (SourceWasntFoundError error) {
+            sendThereIsNoSuchSourceMessageToView(user);
         }
     }
 
-    private void updateSchedule(SCHEDULE schedule) {
-        getScheduleDao().update(schedule);
-    }
-
-    public void updateSchedules() {
-        for (SOURCE source : getSourceDao().getSignedSources()) {
-            updateSchedule(getParser().getTodayAndTomorrowSchedule(source));
+    protected void removeSubscriptionFromUser(USER user, String sourceName) {
+        try {
+            SOURCE source = getSignedSourceByName(user, sourceName);
+            if (!(getUserDao().isThereSuchSubscription(getUserId(user), source))) {
+                sendThereIsNoSuchSubscriptionMessageToView(user);
+            } else {
+                getUserDao().removeSubscriptionFromUser(getUserId(user), source);
+                sendSubscriptionRemoveWasSuccessfulMessageToView(user);
+            }
+            cleanSelectedSourceCategoryAndSubcategory(user);
+        } catch (SourceWasntFoundError error) {
+            sendThereIsNoSuchSourceMessageToView(user);
         }
     }
 
@@ -110,16 +107,35 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         updateUserState(user, UserState.PICK_SOURCE_CATEGORY);
     }
 
+    public void sendSourceCategoriesToSeeWithoutSubscriptionToView(USER user) {
+        getView().sendSourceCategories(user, getParser().getSourceCategorySet());
+        updateUserState(user, UserState.PICK_SOURCE_CATEGORY_TO_SEE_WITHOUT_SUBSCRIPTION);
+    }
+
     public void sendSourcesSubcategoryByCategoryToView(USER user, String category) {
         getView().sendSourcesSubcategoryByCategory(user, getParser().getSourceSubcategoryList(category));
         updateUserState(user, UserState.SOURCES_SUBCATEGORIES);
     }
 
-    public void sendSelectedSourceToView(USER user) {
+    public void sendSourcesSubcategoryByCategoryToSeeWithoutSubscriptionToView(USER user, String category) {
+        getView().sendSourcesSubcategoryByCategory(user, getParser().getSourceSubcategoryList(category));
+        updateUserState(user, UserState.SOURCES_SUBCATEGORIES_TO_SEE_WITHOUT_SUBSCRIPTION);
+    }
+
+    private void sendSelectedSourceToViewBase(USER user) {
         String category = getUserDao().getSelectedSourceCategory(getUserId(user));
         String subcategory = getUserDao().getSelectedSourceSubcategory(getUserId(user));
         getView().sendSources(user, getSourceDao().getSourcesByCategoryAndSubcategory(category, subcategory));
+    }
+
+    public void sendSelectedSourceToView(USER user) {
+        sendSelectedSourceToViewBase(user);
         updateUserState(user, UserState.SOURCES);
+    }
+
+    public void sendSelectedSourceToSeeWithoutSubscriptionToView(USER user) {
+        sendSelectedSourceToViewBase(user);
+        updateUserState(user, UserState.SEE_SCHEDULE_WITHOUT_SUBSCRIPTION);
     }
 
     public void sendSubscriptionsToView(USER user) {
@@ -132,14 +148,31 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         updateUserState(user, UserState.PICK_SIGNED_SOURCE_EXTENDED);
     }
 
+    public void sendSubscriptionsToRemoveToView(USER user) {
+        if (getUserDao().isThereSubscriptions(getUserId(user))) {
+            getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
+            updateUserState(user, UserState.PICK_SIGNED_SOURCE_TO_REMOVE);
+        } else {
+            sendUserHasNoSubscriptionsMessageToView(user);
+        }
+    }
+
     public void sendTodayAndTomorrowScheduleToView(USER user, SOURCE source) {
-        getView().sendTodayAndTomorrowSchedule(user, getParser().getTodayAndTomorrowSchedule(source));
-        updateUserState(user, UserState.SCHEDULE);
+        try {
+            getView().sendTodayAndTomorrowSchedule(user, getParser().getTodayAndTomorrowSchedule(source));
+            updateUserState(user, UserState.SCHEDULE);
+        } catch (SourceWasntFoundError error) {
+            sendThereIsNoSuchSubscriptionMessageToView(user);
+        }
     }
 
     public void sendExtendedScheduleToView(USER user, SOURCE source) {
+        try {
         getView().sendExtendedSchedule(user, getParser().getExtendedSchedule(source));
         updateUserState(user, UserState.SCHEDULE);
+        } catch (SourceWasntFoundError error) {
+            sendThereIsNoSuchSubscriptionMessageToView(user);
+        }
     }
 
     public void sendHelloMessageToView(USER user) {
@@ -155,7 +188,23 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         getView().sendThereIsAlreadySuchSubscriptionMessage(user);
     }
 
+    public void sendThereIsNoSuchSubscriptionMessageToView(USER user) {
+        getView().sendThereIsNoSuchSubscriptionMessage(user);
+    }
+
+    public void sendThereIsNoSuchSourceMessageToView(USER user) {
+        getView().sendThereIsNoSuchSourceMessage(user);
+    }
+
     public void sendSubscriptionSuccessMessageToView(USER user) {
         getView().sendSubscriptionSuccessMessage(user);
+    }
+
+    public void sendSubscriptionRemoveWasSuccessfulMessageToView(USER user) {
+        getView().sendSubscriptionRemoveWasSuccessfulMessage(user);
+    }
+
+    public void sendUserHasNoSubscriptionsMessageToView(USER user) {
+        getView().sendUserHasNoSubscriptionsMessage(user);
     }
 }

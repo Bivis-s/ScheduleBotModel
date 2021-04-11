@@ -10,8 +10,6 @@ public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
 
     void sendSourcesSubcategoryByCategory(USER user, Set<String> sourceSubcategories);
 
-    void sendSignedSources(USER user, List<SOURCE> sources);
-
     void sendTodayAndTomorrowSchedule(USER user, SCHEDULE schedule);
 
     void sendExtendedSchedule(USER user, SCHEDULE schedule);
@@ -24,5 +22,13 @@ public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
 
     void sendThereIsAlreadySuchSubscriptionMessage(USER user);
 
+    void sendThereIsNoSuchSubscriptionMessage(USER user);
+
+    void sendThereIsNoSuchSourceMessage(USER user);
+
     void sendSubscriptionSuccessMessage(USER user);
+
+    void sendSubscriptionRemoveWasSuccessfulMessage(USER user);
+
+    void sendUserHasNoSubscriptionsMessage(USER user);
 }
