@@ -10,4 +10,6 @@ public abstract class ScheduleBotController<USER, NEWS, SOURCE, SCHEDULE> {
     private final ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> model;
 
     public abstract void handle(USER user, String command);
+
+    public abstract void handleCommandByUserState(USER user, String command);
 }

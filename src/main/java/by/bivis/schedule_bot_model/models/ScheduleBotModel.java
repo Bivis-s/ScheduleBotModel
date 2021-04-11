@@ -1,12 +1,12 @@
 package by.bivis.schedule_bot_model.models;
 
-import by.bivis.schedule_bot_model.Parser;
 import by.bivis.schedule_bot_model.UserState;
 import by.bivis.schedule_bot_model.errors.SourceWasntFoundError;
 import by.bivis.schedule_bot_model.objects.db_objects.NewsDao;
 import by.bivis.schedule_bot_model.objects.db_objects.ScheduleDao;
 import by.bivis.schedule_bot_model.objects.db_objects.SourceDao;
 import by.bivis.schedule_bot_model.objects.db_objects.UserDao;
+import by.bivis.schedule_bot_model.parser.Parser;
 import by.bivis.schedule_bot_model.views.ScheduleBotView;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,8 +23,6 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     private Parser<NEWS, SOURCE, SCHEDULE> parser;
     private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> view;
 
-    //TODO рефактор этих методов
-
     protected abstract USER setStateToUser(USER user, UserState state);
 
     protected abstract USER setSelectedSourceCategoryToUser(USER user, String sourceCategory);
@@ -36,8 +34,6 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     protected abstract long getSourceId(SOURCE source);
 
     protected abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
-
-    public abstract void handleCommandByUserState(USER user, String command);
 
     protected void cleanSelectedSourceCategoryAndSubcategory(USER user) {
         getUserDao().update(setSelectedSourceCategoryAndSubcategoryToNull(user));
@@ -103,22 +99,22 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     }
 
     public void sendSourceCategoriesToView(USER user) {
-        getView().sendSourceCategories(user, getParser().getSourceCategorySet());
+        getView().sendSourceCategories(user, getSourceDao().getSourceCategorySet());
         updateUserState(user, UserState.PICK_SOURCE_CATEGORY);
     }
 
     public void sendSourceCategoriesToSeeWithoutSubscriptionToView(USER user) {
-        getView().sendSourceCategories(user, getParser().getSourceCategorySet());
+        getView().sendSourceCategories(user, getSourceDao().getSourceCategorySet());
         updateUserState(user, UserState.PICK_SOURCE_CATEGORY_TO_SEE_WITHOUT_SUBSCRIPTION);
     }
 
     public void sendSourcesSubcategoryByCategoryToView(USER user, String category) {
-        getView().sendSourcesSubcategoryByCategory(user, getParser().getSourceSubcategoryList(category));
+        getView().sendSourcesSubcategoryByCategory(user, getSourceDao().getSourceSubcategoryList(category));
         updateUserState(user, UserState.SOURCES_SUBCATEGORIES);
     }
 
     public void sendSourcesSubcategoryByCategoryToSeeWithoutSubscriptionToView(USER user, String category) {
-        getView().sendSourcesSubcategoryByCategory(user, getParser().getSourceSubcategoryList(category));
+        getView().sendSourcesSubcategoryByCategory(user, getSourceDao().getSourceSubcategoryList(category));
         updateUserState(user, UserState.SOURCES_SUBCATEGORIES_TO_SEE_WITHOUT_SUBSCRIPTION);
     }
 
@@ -168,8 +164,8 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
 
     public void sendExtendedScheduleToView(USER user, SOURCE source) {
         try {
-        getView().sendExtendedSchedule(user, getParser().getExtendedSchedule(source));
-        updateUserState(user, UserState.SCHEDULE);
+            getView().sendExtendedSchedule(user, getParser().getExtendedSchedule(source));
+            updateUserState(user, UserState.SCHEDULE);
         } catch (SourceWasntFoundError error) {
             sendThereIsNoSuchSubscriptionMessageToView(user);
         }
