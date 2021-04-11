@@ -1,6 +1,6 @@
 package by.bivis.schedule_bot_model.models;
 
-import by.bivis.schedule_bot_model.UserState;
+import by.bivis.schedule_bot_model.enums.UserState;
 import by.bivis.schedule_bot_model.errors.SourceWasntFoundError;
 import by.bivis.schedule_bot_model.objects.db_objects.NewsDao;
 import by.bivis.schedule_bot_model.objects.db_objects.ScheduleDao;

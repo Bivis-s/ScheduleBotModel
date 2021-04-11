@@ -1,4 +1,4 @@
-package by.bivis.schedule_bot_model;
+package by.bivis.schedule_bot_model.enums;
 
 public enum UserState {
     START,
