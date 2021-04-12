@@ -6,7 +6,7 @@
 
     <groupId>by.bivis.schedule_bot_model</groupId>
     <artifactId>ScheduleBotModel</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,12 +14,6 @@
         <maven.compiler.target>11</maven.compiler.target>
         <lombok.version>1.18.18</lombok.version>
         <log4j-core.version>2.14.0</log4j-core.version>
-        <hibernate-core.version>5.4.30.Final</hibernate-core.version>
-        <telegrambots.version>5.1.1</telegrambots.version>
-        <sqlite-jdbc.version>3.34.0</sqlite-jdbc.version>
-        <sqlite-dialect.version>1.0</sqlite-dialect.version>
-        <testng.version>7.1.0</testng.version>
-        <hamcrest.version>2.2</hamcrest.version>
     </properties>
 
     <dependencies>

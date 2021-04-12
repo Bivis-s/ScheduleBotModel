@@ -6,22 +6,6 @@ import java.util.Set;
 public interface SourceDao<SOURCE> extends BaseDao<SOURCE> {
 
     /**
-     * Returns the schedule by a source
-     *
-     * @param <SCHEDULE> the type parameter
-     * @param source     the source
-     * @return the schedule
-     */
-    <SCHEDULE> SCHEDULE getSchedule(SOURCE source);
-
-    /**
-     * Returns the source list that has at leas 1 subscription
-     *
-     * @return the signed sources
-     */
-    List<SOURCE> getSignedSources();
-
-    /**
      * Returns the source list that the user is subscribed to
      *
      * @param userId the user id

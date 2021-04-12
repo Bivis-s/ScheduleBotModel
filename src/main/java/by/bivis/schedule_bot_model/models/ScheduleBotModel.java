@@ -23,31 +23,31 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     private Parser<NEWS, SOURCE, SCHEDULE> parser;
     private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> view;
 
-    protected abstract USER setStateToUser(USER user, UserState state);
+    public abstract USER setStateToUser(USER user, UserState state);
 
-    protected abstract USER setSelectedSourceCategoryToUser(USER user, String sourceCategory);
+    public abstract USER setSelectedSourceCategoryToUser(USER user, String sourceCategory);
 
-    protected abstract USER setSelectedSourceSubcategoryToUser(USER user, String sourceSubcategory);
+    public abstract USER setSelectedSourceSubcategoryToUser(USER user, String sourceSubcategory);
 
-    protected abstract long getUserId(USER user);
+    public abstract long getUserId(USER user);
 
-    protected abstract long getSourceId(SOURCE source);
+    public abstract long getSourceId(SOURCE source);
 
-    protected abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
+    public abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
 
-    protected void cleanSelectedSourceCategoryAndSubcategory(USER user) {
+    public void cleanSelectedSourceCategoryAndSubcategory(USER user) {
         getUserDao().update(setSelectedSourceCategoryAndSubcategoryToNull(user));
     }
 
-    protected void updateUserState(USER user, UserState state) {
+    public void updateUserState(USER user, UserState state) {
         getUserDao().update(setStateToUser(user, state));
     }
 
-    protected void updateUserSelectedSourceCategory(USER user, String category) {
+    public void updateUserSelectedSourceCategory(USER user, String category) {
         getUserDao().update(setSelectedSourceCategoryToUser(user, category));
     }
 
-    protected void updateUserSelectedSourceSubcategory(USER user, String subcategory) {
+    public void updateUserSelectedSourceSubcategory(USER user, String subcategory) {
         getUserDao().update(setSelectedSourceSubcategoryToUser(user, subcategory));
     }
 
@@ -62,7 +62,7 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         return getSourceDao().getSourceFromSubscriptionsByName(getUserId(user), sourceName);
     }
 
-    protected void addSubscriptionToUser(USER user, String sourceName) {
+    public void addSubscriptionToUser(USER user, String sourceName) {
         try {
             SOURCE source = getSelectedSourceByName(user, sourceName);
             if (getUserDao().isThereSuchSubscription(getUserId(user), source)) {
@@ -78,7 +78,7 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         }
     }
 
-    protected void removeSubscriptionFromUser(USER user, String sourceName) {
+    public void removeSubscriptionFromUser(USER user, String sourceName) {
         try {
             SOURCE source = getSignedSourceByName(user, sourceName);
             if (!(getUserDao().isThereSuchSubscription(getUserId(user), source))) {
