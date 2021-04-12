@@ -13,6 +13,6 @@ import lombok.RequiredArgsConstructor;
  * @param <SCHEDULE> the schedule type parameter
  */
 @RequiredArgsConstructor
-public abstract class ScheduleBot<USER, NEWS, SOURCE, SCHEDULE> implements Runnable {
-    private final ScheduleBotController<USER, NEWS, SOURCE, SCHEDULE> controller;
+public abstract class ScheduleBot<USER, NEWS, SOURCE, SCHEDULE, NOTE> implements Runnable {
+    private final ScheduleBotController<USER, NEWS, SOURCE, SCHEDULE, NOTE> controller;
 }

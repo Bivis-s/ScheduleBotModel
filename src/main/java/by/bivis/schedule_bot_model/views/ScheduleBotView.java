@@ -3,7 +3,7 @@ package by.bivis.schedule_bot_model.views;
 import java.util.List;
 import java.util.Set;
 
-public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
+public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE, NOTE> {
     void sendNews(USER user, List<NEWS> news);
 
     void sendSourceCategories(USER user, Set<String> sources);
@@ -31,4 +31,22 @@ public interface ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> {
     void sendSubscriptionRemoveWasSuccessfulMessage(USER user);
 
     void sendUserHasNoSubscriptionsMessage(USER user);
+
+    void sendNotes(USER user, List<NOTE> notes);
+
+    void sendEmptyNotesMessage(USER user);
+
+    void sendDeleteNotes(USER user);
+
+    void sendNoteWasAddedMessage(USER user);
+
+    void sendSetNotifyMessage(USER user);
+
+    void sendNotifySuccessfullySetMessage(USER user);
+
+    void sendThereIsAlreadySuchNotificationMessage(USER user);
+
+    void sendNotifyManageMessage(USER user, List<String> notifies);
+
+    void sendClearNotesMessage(USER user);
 }

@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public abstract class ScheduleBotController<USER, NEWS, SOURCE, SCHEDULE> {
-    private final ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> model;
+public abstract class ScheduleBotController<USER, NEWS, SOURCE, SCHEDULE, NOTE> {
+    private final ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE, NOTE> model;
 
     public abstract void handle(USER user, String command);
 

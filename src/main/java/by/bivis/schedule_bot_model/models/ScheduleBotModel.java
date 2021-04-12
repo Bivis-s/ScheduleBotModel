@@ -15,25 +15,27 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
+public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE, NOTE> {
     private NewsDao<NEWS> newsDao;
     private SourceDao<SOURCE> sourceDao;
     private ScheduleDao<SCHEDULE, SOURCE> scheduleDao;
-    private UserDao<USER, SOURCE> userDao;
+    private UserDao<USER, SOURCE, NOTE> userDao;
     private Parser<NEWS, SOURCE, SCHEDULE> parser;
-    private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE> view;
+    private ScheduleBotView<USER, NEWS, SCHEDULE, SOURCE, NOTE> view;
 
-    public abstract USER setStateToUser(USER user, UserState state);
+    protected abstract USER setStateToUser(USER user, UserState state);
 
-    public abstract USER setSelectedSourceCategoryToUser(USER user, String sourceCategory);
+    protected abstract USER setSelectedSourceCategoryToUser(USER user, String sourceCategory);
 
-    public abstract USER setSelectedSourceSubcategoryToUser(USER user, String sourceSubcategory);
+    protected abstract USER setSelectedSourceSubcategoryToUser(USER user, String sourceSubcategory);
 
     public abstract long getUserId(USER user);
 
-    public abstract long getSourceId(SOURCE source);
+    protected abstract long getSourceId(SOURCE source);
 
-    public abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
+    protected abstract USER setSelectedSourceCategoryAndSubcategoryToNull(USER user);
+
+    protected abstract USER setNotifyTimeToUser(USER user, String notifyTime);
 
     public void cleanSelectedSourceCategoryAndSubcategory(USER user) {
         getUserDao().update(setSelectedSourceCategoryAndSubcategoryToNull(user));
@@ -93,6 +95,21 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         }
     }
 
+    public void setNotifyToUser(USER user, String notifyTime, String sourceName) {
+        try {
+            SOURCE source = getSignedSourceByName(user, sourceName);
+            if (getUserDao().isThereNotification(getUserId(user), notifyTime, source)) {
+                sendThereIsAlreadySuchNotificationMessageToView(user);
+            } else {
+                getUserDao().addNotifyToUser(getUserId(user), notifyTime, source);
+                sendNotifySuccessfullySetMessageToView(user);
+            }
+            cleanSelectedSourceCategoryAndSubcategory(user);
+        } catch (SourceWasntFoundError error) {
+            sendThereIsNoSuchSourceMessageToView(user);
+        }
+    }
+
     public void sendNewsToView(USER user) {
         getView().sendNews(user, getParser().getNews());
         updateUserState(user, UserState.NEWS);
@@ -135,19 +152,37 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
     }
 
     public void sendSubscriptionsToView(USER user) {
-        getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
-        updateUserState(user, UserState.PICK_SIGNED_SOURCE);
+        if (getUserDao().isThereSubscriptions(getUserId(user))) {
+            getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
+            updateUserState(user, UserState.PICK_SIGNED_SOURCE);
+        } else {
+            sendUserHasNoSubscriptionsMessageToView(user);
+        }
     }
 
     public void sendSubscriptionsToSeeExtendedScheduleToView(USER user) {
+        if (getUserDao().isThereSubscriptions(getUserId(user))) {
         getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
         updateUserState(user, UserState.PICK_SIGNED_SOURCE_EXTENDED);
+        } else {
+            sendUserHasNoSubscriptionsMessageToView(user);
+        }
     }
 
     public void sendSubscriptionsToRemoveToView(USER user) {
         if (getUserDao().isThereSubscriptions(getUserId(user))) {
             getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
             updateUserState(user, UserState.PICK_SIGNED_SOURCE_TO_REMOVE);
+        } else {
+            sendUserHasNoSubscriptionsMessageToView(user);
+        }
+    }
+
+    public void sendSubscriptionsToSetNotifyTiView(USER user, String notifyTime) {
+        getUserDao().update(setNotifyTimeToUser(user, notifyTime));
+        if (getUserDao().isThereSubscriptions(getUserId(user))) {
+            getView().sendSources(user, getSourceDao().getSignedSources(getUserId(user)));
+            updateUserState(user, UserState.PICK_SIGNED_SOURCE_TO_NOTIFY);
         } else {
             sendUserHasNoSubscriptionsMessageToView(user);
         }
@@ -188,6 +223,10 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
         getView().sendThereIsNoSuchSubscriptionMessage(user);
     }
 
+    public void sendThereIsAlreadySuchNotificationMessageToView(USER user) {
+        getView().sendThereIsAlreadySuchNotificationMessage(user);
+    }
+
     public void sendThereIsNoSuchSourceMessageToView(USER user) {
         getView().sendThereIsNoSuchSourceMessage(user);
     }
@@ -202,5 +241,46 @@ public abstract class ScheduleBotModel<USER, NEWS, SOURCE, SCHEDULE> {
 
     public void sendUserHasNoSubscriptionsMessageToView(USER user) {
         getView().sendUserHasNoSubscriptionsMessage(user);
+    }
+
+    public void sendNotesToView(USER user) {
+        if (getUserDao().isThereNotes(getUserId(user))) {
+            getView().sendNotes(user, getUserDao().getNotes(getUserId(user)));
+        } else {
+            getView().sendEmptyNotesMessage(user);
+        }
+        updateUserState(user, UserState.NOTES);
+    }
+
+    public void sendEmptyNotesMessageToView(USER user) {
+        getView().sendEmptyNotesMessage(user);
+    }
+
+    public void sendDeleteNotesToView(USER user) {
+        getView().sendDeleteNotes(user);
+    }
+
+    protected abstract NOTE createNoteFromText(USER user, String noteText);
+
+    public void addNoteToUser(USER user, String noteText) {
+        getUserDao().addNoteToUser(createNoteFromText(user, noteText));
+        getView().sendNoteWasAddedMessage(user);
+    }
+
+    public void sendSetNotifyMessageToView(USER user) {
+        getView().sendSetNotifyMessage(user);
+        updateUserState(user, UserState.NOTIFY);
+    }
+
+    public void sendNotifySuccessfullySetMessageToView(USER user) {
+        getView().sendNotifySuccessfullySetMessage(user);
+    }
+
+    public void sendNotifyManageMessageToView(USER user) {
+        getView().sendNotifyManageMessage(user, getUserDao().getUserNotifies(getUserId(user)));
+    }
+
+    public void sendClearNotesMessageToView(USER user) {
+        getView().sendClearNotesMessage(user);
     }
 }
