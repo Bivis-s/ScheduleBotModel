@@ -1,6 +1,7 @@
 package by.bivis.schedule_bot_model;
 
 import by.bivis.schedule_bot_model.controllers.ScheduleBotController;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
  * @param <SCHEDULE> the schedule type parameter
  */
 @RequiredArgsConstructor
+@Getter
 public abstract class ScheduleBot<USER, NEWS, SOURCE, SCHEDULE, NOTE> implements Runnable {
     private final ScheduleBotController<USER, NEWS, SOURCE, SCHEDULE, NOTE> controller;
 }
